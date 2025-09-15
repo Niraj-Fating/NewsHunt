@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsHunt - Your Daily Digest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as a content-first dashboard. The structure is: Header (for global navigation and branding) -> Main Content (containing interactive filters and the dynamic news grid). This single-view layout allows users to immediately engage with the content without navigating away. The flow is: 1. View all news. 2. Click a filter to instantly reload the grid with new content. 3. Interact with individual cards (Read More/TTS). This structure was chosen for its intuitiveness and efficiency in delivering the core functionality described in the source report. -->
+    <!-- Visualization & Content Choices: 
+         - Report Info: News Articles -> Goal: Inform/Discover -> Viz/Method: Grid of Cards (HTML/CSS) -> Interaction: Filter buttons update the grid -> Justification: Visually scannable and familiar to users.
+         - Report Info: TTS -> Goal: Accessibility -> Viz/Method: Speaker Icon Button (Font Awesome) -> Interaction: Click triggers JS SpeechSynthesis -> Justification: Universal and intuitive icon.
+         - Report Info: Login -> Goal: Authentication -> Viz/Method: Modal Dialog (HTML/CSS) -> Interaction: Button click shows/hides modal -> Justification: Keeps user on the page, avoiding disruptive navigation.
+         - Report Info: City/Region Filter -> Goal: Geographic Filtering -> Viz/Method: Dropdown Menu (HTML/CSS) -> Interaction: Hover/click reveals options -> Justification: Space-efficient UI element for multiple choices.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .dark body {
+            background-color: #111827;
+        }
+        .modal {
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .category-btn.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .category-btn:not(.active) {
+            background-color: white;
+            color: #374151;
+        }
+        .dark .category-btn:not(.active) {
+            background-color: #374151;
+            color: #d1d5db;
+        }
+        .news-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        #chat-widget {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .chat-hidden {
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .chat-message {
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body class="text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">NewsPulse</a>
+                    <div class="hidden md:flex items-baseline ml-10 space-x-4">
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">HOME</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">LATEST</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">INDIA</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">WORLD</a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">MEDIA</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="login-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section id="news-dashboard">
+            <h2 class="text-3xl font-bold mb-2">Today's Headlines</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Explore top stories from India and around the world. Select a category to filter the news.</p>
+            
+            <div id="category-filters" class="flex flex-wrap gap-2 mb-8">
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full active" data-category="all">All</button>
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full" data-category="technology">Technology</button>
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full" data-category="business">Business</button>
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full" data-category="sports">Sports</button>
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full" data-category="entertainment">Entertainment</button>
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full" data-category="health">Health</button>
+                <button class="category-btn px-4 py-2 text-sm font-medium rounded-full" data-category="science">Science</button>
+            </div>
+
+            <div id="news-grid" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <!-- News articles will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold text-center mb-6">Welcome Back</h2>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium mb-1">Email Address</label>
+                    <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div class="fixed bottom-5 right-5 z-50">
+        <!-- Chat Window -->
+        <div id="chat-widget" class="w-80 h-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl flex flex-col chat-hidden">
+            <div class="bg-indigo-600 text-white p-3 rounded-t-lg flex justify-between items-center">
+                <h3 class="font-bold">NewsBot Assistant</h3>
+                <button id="close-chat-btn" class="text-white">&times;</button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto">
+                <!-- Messages will appear here -->
+            </div>
+            <form id="chat-form" class="p-2 border-t dark:border-gray-700 flex">
+                <input type="text" id="chat-input" placeholder="Ask for a category..." class="w-full px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600">
+                <button type="submit" class="bg-indigo-600 text-white px-4 rounded-r-md hover:bg-indigo-700"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+        <!-- Chat Toggle Button -->
+        <button id="chat-toggle-btn" class="mt-2 w-16 h-16 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl">
+            <i class="fas fa-comment-dots"></i>
+        </button>
+    </div>
+
+    <script>
+        const domElements = {
+            loginBtn: document.getElementById('login-btn'),
+            loginModal: document.getElementById('login-modal'),
+            closeModalBtn: document.getElementById('close-modal-btn'),
+            newsGrid: document.getElementById('news-grid'),
+            categoryFilters: document.getElementById('category-filters'),
+            loginForm: document.getElementById('login-form'),
+            chatWidget: document.getElementById('chat-widget'),
+            chatToggleBtn: document.getElementById('chat-toggle-btn'),
+            closeChatBtn: document.getElementById('close-chat-btn'),
+            chatForm: document.getElementById('chat-form'),
+            chatInput: document.getElementById('chat-input'),
+            chatMessages: document.getElementById('chat-messages'),
+        };
+
+        const mockApiData = {
+            articles: [
+                { title: "India's Tech Sector Surges in 2025", category: "technology", description: "The Indian technology sector has seen unprecedented growth, driven by AI and domestic innovation.", urlToImage: "https://placehold.co/600x400/6366f1/white?text=Technology", url: "#" },
+                { title: "Mumbai Stock Exchange Hits Record High", category: "business", description: "The BSE SENSEX crossed a new milestone, fueled by strong foreign investment.", urlToImage: "https://placehold.co/600x400/10b981/white?text=Business", url: "#" },
+                { title: "Indian Cricket Team Wins World Championship", category: "sports", description: "A spectacular performance led the team to victory in the T20 World Championship.", urlToImage: "https://placehold.co/600x400/ef4444/white?text=Sports", url: "#" },
+                { title: "Bollywood's Newest Blockbuster Breaks Records", category: "entertainment", description: "The latest historical epic is shattering box office records both domestically and internationally.", urlToImage: "https://placehold.co/600x400/f59e0b/white?text=Entertainment", url: "#" },
+                { title: "Breakthrough in Malaria Vaccine Development in Pune", category: "health", description: "Researchers announced a major breakthrough in developing a highly effective malaria vaccine.", urlToImage: "https://placehold.co/600x400/84cc16/white?text=Health", url: "#" },
+                { title: "ISRO Announces New Mission to Venus", category: "science", description: "ISRO has officially announced its upcoming unmanned mission to study the atmosphere of Venus.", urlToImage: "https://placehold.co/600x400/3b82f6/white?text=Science", url: "#" },
+                { title: "AI in Agriculture: A New Green Revolution", category: "technology", description: "Farmers across India are adopting AI-powered tools to increase crop yield and sustainability.", urlToImage: "https://placehold.co/600x400/6366f1/white?text=Tech+2", url: "#" },
+                { title: "Startups in Bengaluru Secure Record Funding", category: "business", description: "Venture capitalists are pouring record sums into Bengaluru's vibrant startup ecosystem.", urlToImage: "https://placehold.co/600x400/10b981/white?text=Business+2", url: "#" }
+            ]
+        };
+
+        function toggleModal(show) {
+            domElements.loginModal.classList.toggle('active', show);
+        }
+
+        function renderNews(articles) {
+            domElements.newsGrid.innerHTML = '';
+            if (!articles || articles.length === 0) {
+                // BUG FIX 1: The HTML string was not properly quoted.
+                domElements.newsGrid.innerHTML = '<p class="text-center col-span-full text-gray-500">No articles found for this category.</p>';
+                return;
+            }
+            articles.forEach(article => {
+                const sanitizedTitle = article.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const card = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col news-card">
+                        <img class="w-full h-48 object-cover" src="${article.urlToImage}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=Image+Not+Found';" alt="News Image">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h3 class="text-xl font-bold mb-2 flex-grow">${article.title}</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">${article.description}</p>
+                            <div class="flex justify-between items-center mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">Read More</a>
+                                <button class="text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400" onclick="speak('${sanitizedTitle}')" aria-label="Read headline aloud">
+                                    <i class="fas fa-volume-up fa-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                domElements.newsGrid.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function fetchNews(category = 'all') {
+            // BUG FIX 2: The HTML string was not properly quoted.
+            domElements.newsGrid.innerHTML = '<p class="text-center col-span-full text-gray-500">Loading news...</p>';
+            setTimeout(() => {
+                const articles = category === 'all'
+                    ? mockApiData.articles
+                    : mockApiData.articles.filter(article => article.category === category);
+                renderNews(articles);
+            }, 300);
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                // The 'lang' property was removed to allow the browser to use its default voice,
+                // fixing the "language not supported" error on some systems.
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.error('Text-to-speech not supported by this browser.');
+            }
+        }
+
+        function handleCategoryClick(event) {
+            if (event.target.classList.contains('category-btn')) {
+                const category = event.target.dataset.category;
+                updateCategory(category);
+            }
+        }
+        
+        function updateCategory(category) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.category === category);
+            });
+            fetchNews(category);
+        }
+
+        function handleLoginFormSubmit(event) {
+            event.preventDefault();
+            console.log('Login attempt with email:', domElements.loginForm.email.value);
+            toggleModal(false);
+        }
+
+        function toggleChat(show) {
+            domElements.chatWidget.classList.toggle('chat-hidden', !show);
+        }
+
+        function addChatMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('p-2', 'rounded-lg', 'mb-2', 'chat-message');
+            if (sender === 'user') {
+                messageDiv.classList.add('bg-indigo-500', 'text-white', 'self-end');
+            } else {
+                messageDiv.classList.add('bg-gray-200', 'dark:bg-gray-600', 'self-start');
+            }
+            messageDiv.textContent = message;
+            domElements.chatMessages.appendChild(messageDiv);
+            domElements.chatMessages.scrollTop = domElements.chatMessages.scrollHeight;
+        }
+        
+        function getBotResponse(userInput) {
+            const categories = ["all", "technology", "business", "sports", "entertainment", "health", "science"];
+            const lowerCaseInput = userInput.toLowerCase();
+            
+            let foundCategory = categories.find(cat => lowerCaseInput.includes(cat));
+
+            if (!foundCategory && (lowerCaseInput.includes('everything') || lowerCaseInput.includes('show all'))) {
+                foundCategory = 'all';
+            }
+
+            if (foundCategory) {
+                // BUG FIX 3: The string was missing quotes (backticks for template literal).
+                addChatMessage(`Sure! Filtering news for ${foundCategory}.`, 'bot');
+                updateCategory(foundCategory);
+            } else {
+                addChatMessage("I can filter news by category. Try 'sports', 'technology', or 'show all'.", 'bot');
+            }
+        }
+
+        function handleChatSubmit(event) {
+            event.preventDefault();
+            const userInput = domElements.chatInput.value.trim();
+            if (!userInput) return;
+
+            addChatMessage(userInput, 'user');
+            domElements.chatInput.value = '';
+            
+            setTimeout(() => getBotResponse(userInput), 500);
+        }
+
+        // --- Event Listeners ---
+        domElements.loginBtn.addEventListener('click', () => toggleModal(true));
+        domElements.closeModalBtn.addEventListener('click', () => toggleModal(false));
+        domElements.loginModal.addEventListener('click', (event) => {
+            if (event.target === domElements.loginModal) toggleModal(false);
+        });
+        domElements.categoryFilters.addEventListener('click', handleCategoryClick);
+        domElements.loginForm.addEventListener('submit', handleLoginFormSubmit);
+        
+        domElements.chatToggleBtn.addEventListener('click', () => {
+            domElements.chatWidget.classList.toggle('chat-hidden');
+        });
+        domElements.closeChatBtn.addEventListener('click', () => {
+            domElements.chatWidget.classList.add('chat-hidden');
+        });
+        domElements.chatForm.addEventListener('submit', handleChatSubmit);
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchNews();
+            addChatMessage("Hello! How can I help you find the news today? You can ask for categories like 'business' or 'health'.", 'bot');
+        });
+    </script>
+</body>
+</html>
+
