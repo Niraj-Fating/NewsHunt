@@ -1,0 +1,333 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>NewsHub - Your Daily Digest</title> 
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <link 
+href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display
+ =swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font
+awesome/6.4.0/css/all.min.css"> 
+    <style> 
+        body { 
+            font-family: 'Inter', sans-serif; 
+        } 
+        .dropdown:hover .dropdown-menu { 
+            display: block; 
+        } 
+        .modal { 
+            display: none; 
+        } 
+        .modal.active { 
+            display: flex; 
+        } 
+    </style> 
+</head> 
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition
+colors duration-300"> 
+ 
+    <!-- Header --> 
+    <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50"> 
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8"> 
+            <div class="flex items-center justify-between h-16"> 
+                <div class="flex items-center"> 
+                    <a href="#" class="text-2xl font-bold text-indigo-600 dark:text-indigo
+400">NewsHub</a> 
+                    <div class="hidden md:flex items-baseline ml-10 space-x-4"> 
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray
+700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">HOME</a> 
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray
+700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">LATEST</a> 
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray
+700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">INDIA</a> 
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray
+700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">WORLD</a> 
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray
+700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">MEDIA</a> 
+                        <!-- City Dropdown --> 
+                        <div class="relative dropdown"> 
+                            <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 
+dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center"> 
+                                <span>CITY</span> 
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 
+0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke
+linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg> 
+                            </button> 
+                            <div class="dropdown-menu absolute hidden bg-white dark:bg-gray-800 
+rounded-md shadow-lg mt-2 w-48 max-h-60 overflow-y-auto"> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Ahmedabad</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Bengaluru</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Chennai</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Delhi</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Hyderabad</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Kolkata</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Mumbai</a> 
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray
+300 hover:bg-gray-100 dark:hover:bg-gray-700">Pune</a> 
+                            </div> 
+                        </div> 
+                    </div> 
+                </div> 
+                <div class="flex items-center"> 
+                    <button id="login-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white 
+font-bold py-2 px-4 rounded-md"> 
+                        Login 
+                    </button> 
+                </div> 
+            </div> 
+        </nav> 
+    </header> 
+ 
+    <!-- Main Content --> 
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8"> 
+        <!-- Category Filters --> 
+        <div class="mb-8"> 
+            <h2 class="text-2xl font-bold mb-4">Categories</h2> 
+            <div id="category-filters" class="flex flex-wrap gap-2"> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-white bg
+indigo-600 rounded-full" data-category="all">All</button> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-gray-700 bg
+white dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 
+dark:hover:bg-gray-600" data-category="technology">Technology</button> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-gray-700 bg
+white dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 
+dark:hover:bg-gray-600" data-category="business">Business</button> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-gray-700 bg
+white dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 
+dark:hover:bg-gray-600" data-category="sports">Sports</button> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-gray-700 bg
+white dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 
+dark:hover:bg-gray-600" data-category="entertainment">Entertainment</button> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-gray-700 bg
+white dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 
+dark:hover:bg-gray-600" data-category="health">Health</button> 
+                <button class="category-btn px-4 py-2 text-sm font-medium text-gray-700 bg
+white dark:bg-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-200 
+dark:hover:bg-gray-600" data-category="science">Science</button> 
+            </div> 
+        </div> 
+ 
+        <!-- News Articles Grid --> 
+        <div id="news-grid" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3"> 
+            <!-- News articles will be dynamically inserted here --> 
+        </div> 
+    </main> 
+ 
+    <!-- Login Modal --> 
+    <div id="login-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center 
+justify-center"> 
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md"> 
+            <div class="flex justify-between items-center mb-6"> 
+                <h2 class="text-2xl font-bold">Login</h2> 
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800 
+dark:hover:text-gray-300">&times;</button> 
+            </div> 
+            <form> 
+                <div class="mb-4"> 
+                    <label for="email" class="block text-sm font-medium mb-1">Email 
+Address</label> 
+                    <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 
+dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo
+500 dark:bg-gray-700"> 
+                </div> 
+                <div class="mb-6"> 
+                    <label for="password" class="block text-sm font-medium mb
+1">Password</label> 
+                    <input type="password" id="password" class="w-full px-3 py-2 border border
+gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring
+indigo-500 dark:bg-gray-700"> 
+                </div> 
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text
+white font-bold py-2 px-4 rounded-md"> 
+                    Login 
+                </button> 
+            </form> 
+        </div> 
+    </div> 
+ 
+ 
+    <script> 
+        // --- DOM Elements --- 
+        const loginBtn = document.getElementById('login-btn'); 
+        const loginModal = document.getElementById('login-modal'); 
+        const closeModalBtn = document.getElementById('close-modal-btn'); 
+        const newsGrid = document.getElementById('news-grid'); 
+        const categoryFilters = document.getElementById('category-filters'); 
+ 
+        // --- API Key --- 
+        const apiKey = 'deepseek/deepseek-chat-v3-0324'; // Your API key 
+ 
+        // --- Modal Logic --- 
+        loginBtn.addEventListener('click', () => { 
+            loginModal.classList.add('active'); 
+        }); 
+ 
+        closeModalBtn.addEventListener('click', () => { 
+            loginModal.classList.remove('active'); 
+        }); 
+ 
+        window.addEventListener('click', (event) => { 
+            if (event.target === loginModal) { 
+                loginModal.classList.remove('active'); 
+            } 
+        }); 
+ 
+        // --- Category Filter Logic --- 
+        categoryFilters.addEventListener('click', (event) => { 
+            if (event.target.classList.contains('category-btn')) { 
+                // Remove active styles from all buttons 
+                document.querySelectorAll('.category-btn').forEach(btn => { 
+                    btn.classList.remove('bg-indigo-600', 'text-white'); 
+                    btn.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray
+200'); 
+                }); 
+                // Add active styles to the clicked button 
+                event.target.classList.add('bg-indigo-600', 'text-white'); 
+                event.target.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 
+'dark:text-gray-200'); 
+                 
+                const category = event.target.dataset.category; 
+                fetchNews(category); 
+            } 
+        }); 
+ 
+        // --- News API Fetch --- 
+        async function fetchNews(category = 'general') { 
+            const apiCategory = category === 'all' ? 'general' : category; 
+             
+            // --- MOCK DATA --- 
+            // The original fetch call was failing because 'https://your-news-api.com' is a 
+placeholder URL. 
+            // I've replaced the failing network request with mock data to demonstrate 
+functionality. 
+            // When you have a valid News API URL and Key, you can replace this section. 
+            console.log(`Simulating fetch for category: ${apiCategory}`); 
+            const mockArticles = [ 
+                { title: "India's Tech Sector Surges in 2025", category: "technology", description: 
+"The Indian technology sector has seen unprecedented growth, driven by AI and 
+domestic innovation.", urlToImage: 
+"https://placehold.co/600x400/6366f1/white?text=Technology", url: "#" }, 
+                { title: "Mumbai Stock Exchange Hits Record High", category: "business", 
+description: "The BSE SENSEX crossed a new milestone, fueled by strong foreign 
+investment.", urlToImage: "https://placehold.co/600x400/10b981/white?text=Business", 
+url: "#" }, 
+                { title: "Indian Cricket Team Wins World Championship", category: "sports", 
+description: "A spectacular performance led the team to victory in the T20 World 
+Championship.", urlToImage: "https://placehold.co/600x400/ef4444/white?text=Sports", 
+url: "#" }, 
+                { title: "Bollywood's Newest Blockbuster Breaks Records", category: 
+"entertainment", description: "The latest historical epic is shattering box office records 
+both domestically and internationally.", urlToImage: 
+"https://placehold.co/600x400/f59e0b/white?text=Entertainment", url: "#" }, 
+                { title: "Breakthrough in Malaria Vaccine Development in Pune", category: 
+"health", description: "Researchers announced a major breakthrough in developing a 
+highly effective malaria vaccine.", urlToImage: 
+"https://placehold.co/600x400/84cc16/white?text=Health", url: "#" }, 
+                { title: "ISRO Announces New Mission to Venus", category: "science", 
+description: "ISRO has officially announced its upcoming unmanned mission to study 
+the atmosphere of Venus.", urlToImage: 
+"https://placehold.co/600x400/3b82f6/white?text=Science", url: "#" } 
+            ]; 
+ 
+            // Filter mock articles based on category for demonstration 
+            const filteredArticles = apiCategory === 'general'  
+                ? mockArticles  
+                : mockArticles.filter(article => article.category === apiCategory); 
+ 
+            // Simulate network delay 
+            newsGrid.innerHTML = `<p class="text-center col-span-full">Loading 
+news...</p>`; 
+            setTimeout(() => { 
+                renderNews(filteredArticles); 
+            }, 500); 
+ 
+            /* 
+            // ** ACTUAL API INTEGRATION POINT ** 
+            // Replace the mock data code above with this fetch call once you have a valid API 
+endpoint and key. 
+            const url = `https://your-real-news-api.com/v1/top
+headlines?country=in&category=${apiCategory}&apiKey=${apiKey}`; 
+             
+            console.log(`Fetching news from: ${url}`); // For debugging 
+ 
+            try { 
+                const response = await fetch(url); 
+                if (!response.ok) { 
+                    throw new Error(`HTTP error! status: ${response.status}`); 
+                } 
+                const data = await response.json(); 
+                renderNews(data.articles); 
+            } catch (error) { 
+                console.error('Error fetching news:', error); 
+                newsGrid.innerHTML = `<p class="text-center col-span-full text-red
+500">Failed to load news. Please check the API endpoint and key.</p>`; 
+            } 
+            */ 
+        } 
+ 
+        // --- Render News --- 
+        function renderNews(articles) { 
+            newsGrid.innerHTML = ''; // Clear existing news 
+            if (!articles || articles.length === 0) { 
+                newsGrid.innerHTML = `<p class="text-center col-span-full">No articles found 
+for this category.</p>`; 
+                return; 
+            } 
+            articles.forEach(article => { 
+                // Sanitize title for the `onclick` attribute 
+                const sanitizedTitle = article.title.replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
+                const newsCard = ` 
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden 
+flex flex-col"> 
+                        <img class="w-full h-48 object-cover" src="${article.urlToImage || 
+'https://placehold.co/600x400/6366f1/white?text=News'}" 
+onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=I
+ mage+Not+Found';" alt="News Image"> 
+                        <div class="p-6 flex flex-col flex-grow"> 
+                            <h3 class="text-xl font-bold mb-2 flex-grow">${article.title}</h3> 
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4"> 
+                                ${article.description || 'No description available.'} 
+                            </p> 
+                            <div class="flex justify-between items-center mt-auto"> 
+                                <a href="${article.url}" target="_blank" rel="noopener noreferrer" 
+class="text-indigo-600 dark:text-indigo-400 hover:underline">Read More</a> 
+                                <button class="text-gray-500 dark:text-gray-400 hover:text-indigo-600 
+dark:hover:text-indigo-400" onclick="speak('${sanitizedTitle}')"> 
+                                    <i class="fas fa-volume-up fa-lg"></i> 
+                                </button> 
+                            </div> 
+                        </div> 
+                    </div> 
+                `; 
+                newsGrid.insertAdjacentHTML('beforeend', newsCard); 
+            }); 
+        } 
+ 
+ 
+        // --- Text-to-Speech --- 
+        function speak(text) { 
+            if ('speechSynthesis' in window) { 
+                window.speechSynthesis.cancel(); // Stop any previous speech 
+                const utterance = new SpeechSynthesisUtterance(text); 
+                utterance.lang = 'en-IN'; // Set language to Indian English 
+                window.speechSynthesis.speak(utterance); 
+            } else { 
+                console.error('Sorry, your browser does not support text-to-speech.'); 
+                // In a real app, you might show a small, non-blocking notification. 
+            } 
+        } 
+ 
+        // --- Initial Fetch on Page Load --- 
+        fetchNews(); 
+</script> 
+</body> 
+</html> 
